@@ -102,11 +102,11 @@ resource "aws_batch_job_definition" "job_definition" {
 # - Removed tags.
 # - Removed unnecessary string interpolation.
 # - Replaced data.template_file with templatefile.
+# - Changed var.is_enabled from string to boolean.
 module "schedule_batch_job" {
   source               = "./schedule_batch_job"
   name                 = "${var.name}-job"
   batch_job_definition = aws_batch_job_definition.job_definition.arn
   batch_job_queue      = aws_batch_job_queue.job_queue.arn
   schedule_expression  = var.schedule_expression
-  is_enabled           = "true"
 }

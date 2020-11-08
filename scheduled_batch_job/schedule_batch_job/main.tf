@@ -16,7 +16,7 @@ variable "schedule_expression" {}
 
 # whether or not the job will be run
 variable "is_enabled" {
-  default = "true"
+  default = true
 }
 
 data "archive_file" "lambda_zip" {
