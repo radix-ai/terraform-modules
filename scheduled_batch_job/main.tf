@@ -74,7 +74,7 @@ module "batch_compute_environment" {
   type                   = "MANAGED"
   compute_resources_type = "SPOT"
   instance_type          = var.instance_type  # Default is ["optimal"].
-  bid_percentage         = 115
+  bid_percentage         = 100
   min_vcpus              = 0
   desired_vcpus          = 0
   max_vcpus              = var.max_vcpus
