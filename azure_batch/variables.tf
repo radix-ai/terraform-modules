@@ -1,3 +1,9 @@
+# Variable related to the subscription
+variable "subscription_id" {
+  description = "ID of the subscription to work with"
+  type        = string
+}
+
 # Variables related to the resource group
 variable "resource_group_name" {
   description = "Name of the resource group within which resources will be created"
