@@ -41,11 +41,11 @@ module "azure_batch_service" {
   image_tag                    = "3.8"
   command_line                 = "echo 'Hello world'"
   autoscale_formula            = <<EOF
-          $curTime = time();
-          $workHours = $curTime.hour >= 8 && $curTime.hour < 18;
-          $isWeekday = $curTime.weekday >= 1 && $curTime.weekday <= 5;
-          $isWorkingWeekdayHour = $workHours && $isWeekday;
-          $TargetDedicatedNodes = $isWorkingWeekdayHour ? 2:1;
+          startingNumberOfVMs = 0;
+          maxNumberofVMs = 10;
+          pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
+          pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
+          $TargetDedicatedNodes=min(maxNumberofVMs, pendingTaskSamples);
           $NodeDeallocationOption = taskcompletion;
   EOF
 }
