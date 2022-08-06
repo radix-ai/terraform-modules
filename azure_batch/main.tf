@@ -64,7 +64,8 @@ module "azure_batch_service" {
 
 */
 
-# Create an Azure Blob Storage linked to Azure Batch
+# Create an storage account linked to Azure Batch
+# See: https://docs.microsoft.com/en-us/azure/batch/accounts
 resource "azurerm_storage_account" "batch_computing_s_a" {
   name                     = "batch${terraform.workspace}storage"
   resource_group_name      = var.resource_group_name
