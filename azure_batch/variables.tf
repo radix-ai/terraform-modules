@@ -31,6 +31,21 @@ variable "vm_size" {
   default     = "Standard_A1_V2"
 }
 
+# Variables related to the container registry
+variable "container_registry_login_server" {
+  description = "Login server for the container registry"
+  type        = string
+}
+
+variable "container_registry_username" {
+  description = "Username for the container registry"
+  type        = string
+}
+
+variable "container_registry_password" {
+  description = "Password for the container registry"
+  type        = string
+}
 
 # Variables related to the custom Docker image
 variable "image_name" {
@@ -59,11 +74,11 @@ variable "autoscale_formula" {
   description = "Autoscale formula for the pool"
   type        = string
   default     = <<EOF
-          $curTime = time();
-          $workHours = $curTime.hour >= 8 && $curTime.hour < 18;
-          $isWeekday = $curTime.weekday >= 1 && $curTime.weekday <= 5;
-          $isWorkingWeekdayHour = $workHours && $isWeekday;
-          $TargetDedicatedNodes = $isWorkingWeekdayHour ? 2:1;
+          startingNumberOfVMs = 0;
+          maxNumberofVMs = 10;
+          pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
+          pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
+          $TargetDedicatedNodes=min(maxNumberofVMs, pendingTaskSamples);
           $NodeDeallocationOption = taskcompletion;
   EOF
 }
