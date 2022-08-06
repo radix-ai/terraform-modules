@@ -13,9 +13,9 @@ storage account.
 2. Create a container within the above-mentioned storage account with a user-tunable retention 
    policy of n days [4].
 3. Create a private container registry [5] and push a private Docker image in that registry.
-4. Create the Batch account. Warning: it is not possible to create more then a single Batch Account
-   per subscription and per region due to quota limitations (see Ref. [6]). Consider increasing that
-   if needed.
+4. Create the Batch account.
+   Warning: it is not possible to create more then a single Batch Account per subscription and per
+   region due to quota limitations [6]. Consider increasing that if needed.
 5. Create a resizable pool with custom autoscaling formula [7] comprised of Docker-compatible
    nodes whose configuration is user-defined [8].
    Warning: by default, only a very limited array of VMs is available (10 VMs chosen amonst the
