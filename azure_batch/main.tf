@@ -2,7 +2,9 @@
 
 # Purpose
 
-Create an Azure Batch account [1] with a pool populated of Docker-compatible compute nodes [2].
+Create an Azure Batch account [1] with an autoscaling pool of compute nodes that run a Docker
+image [2] and can read resource files from a storage account and write the output back to that
+storage account.
 
 # Notes
 
