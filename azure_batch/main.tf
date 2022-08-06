@@ -16,11 +16,12 @@ storage account.
 4. Create the Batch account. Warning: it is not possible to create more then a single Batch Account
    per subscription and per region due to quota limitations (see Ref. [6]). Consider increasing that
    if needed.
-5. Create a resizable pool (see Ref. [7] for more details about the autoscale formula) made of 
-   Docker-compatible nodes whose configuration is user-chosen [8]. Warning: by default, only a 
-   very limited array of VMs is available (10 VMs chosen amonst the Av2 Series, DSv3 Series, 
-   Dv3 Series, ESv3 Series and Ev3 Series). Should you need other types of VMs or more of them, 
-   consider asking for an increase of quota for your Azure subscription (see Ref. [6]).
+5. Create a resizable pool with custom autoscaling formula [7] comprised of Docker-compatible
+   nodes whose configuration is user-defined [8].
+   Warning: by default, only a very limited array of VMs is available (10 VMs chosen amonst the
+   Av2 Series, DSv3 Series, Dv3 Series, ESv3 Series and Ev3 Series). Should you need other
+   types of VMs or more of them, consider asking for an increase of quota for your Azure
+   subscription [6].
 
 # Usage
 
