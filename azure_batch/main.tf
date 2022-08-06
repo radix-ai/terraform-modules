@@ -32,7 +32,6 @@ resource "azurerm_resource_group" "batch_computing_rg" {
 
 module "azure_batch_service" {
   source = "github.com/radix-ai/terraform-modules//azure_batch"
-  subscription_id              = "yoursubscriptionID"
   resource_group_name          = azurerm_resource_group.batch_computing_rg.name
   resource_group_location      = azurerm_resource_group.batch_computing_rg.location
   container_name               = "inputcontainer"
