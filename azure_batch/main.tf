@@ -8,8 +8,7 @@ storage account.
 
 # Notes
 
-1. Create a storage account [3] to store files used by the compute nodes to perform any backend 
-   calculation.
+1. Create a storage account [3] for Azure Batch to read resource files and store output files.
 2. Create a container within the above-mentioned storage account with a user-tunable retention 
    policy of n days [4].
 3. Create a private container registry [5] and push a private Docker image in that registry.
