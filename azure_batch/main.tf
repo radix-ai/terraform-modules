@@ -11,16 +11,15 @@ storage account.
 1. Create a storage account [3] for Azure Batch to read resource files and store output files.
 2. Create a container within the above-mentioned storage account with a user-tunable retention 
    policy of n days [4].
-3. Create a private container registry [5] and push a private Docker image in that registry.
-4. Create the Batch account.
+3. Create the Batch account.
    Warning: it is not possible to create more then a single Batch Account per subscription and per
-   region due to quota limitations [6]. Consider increasing that if needed.
-5. Create a resizable pool with custom autoscaling formula [7] comprised of Docker-compatible
-   nodes whose configuration is user-defined [8].
+   region due to quota limitations [5]. Consider contacting Microsoft to increase that if needed.
+4. Create a resizable pool with custom autoscaling formula [6] comprised of Docker-compatible
+   nodes whose configuration is user-defined [7].
    Warning: by default, only a very limited array of VMs is available (10 VMs chosen amongst the
    Av2 Series, DSv3 Series, Dv3 Series, ESv3 Series and Ev3 Series). Should you need other
-   types of VMs or more of them, consider asking for an increase of quota for your Azure
-   subscription [6].
+   types of VMs or more of them, consider asking for a quota increase for your Azure
+   subscription [5].
 
 # Usage
 
@@ -32,15 +31,18 @@ resource "azurerm_resource_group" "batch_computing_rg" {
 
 module "azure_batch_service" {
   source = "github.com/radix-ai/terraform-modules//azure_batch"
-  resource_group_name          = azurerm_resource_group.batch_computing_rg.name
-  resource_group_location      = azurerm_resource_group.batch_computing_rg.location
-  container_name               = "inputcontainer"
-  keep_inp_files_during_n_days = 1
-  vm_size                      = "Standard_A1_V2"
-  image_name                   = "python"
-  image_tag                    = "3.8"
-  command_line                 = "echo 'Hello world'"
-  autoscale_formula            = <<EOF
+  resource_group_name             = azurerm_resource_group.batch_computing_rg.name
+  resource_group_location         = azurerm_resource_group.batch_computing_rg.location
+  container_name                  = "inputcontainer"
+  keep_inp_files_during_n_days    = 1
+  vm_size                         = "Standard_A1_V2"
+  container_registry_login_server = "https://my_private_container_registry.com/"
+  container_registry_username     = "registry_username"
+  container_registry_password     = "registry_password"
+  image_name                      = "python"
+  image_tag                       = "3.8"
+  command_line                    = "echo 'Hello world'"
+  autoscale_formula               = <<EOF
           startingNumberOfVMs = 0;
           maxNumberofVMs = 10;
           pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
@@ -56,10 +58,9 @@ module "azure_batch_service" {
 [2] https://docs.microsoft.com/en-us/azure/batch/nodes-and-pools
 [3] https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview
 [4] https://docs.microsoft.com/en-us/azure/storage/blobs/immutable-time-based-retention-policy-overview
-[5] https://docs.microsoft.com/en-us/azure/container-registry/
-[6] https://docs.microsoft.com/en-us/azure/batch/batch-quota-limit
-[7] https://docs.microsoft.com/en-us/azure/batch/batch-automatic-scaling
-[8] https://docs.microsoft.com/en-us/azure/batch/batch-docker-container-workloads
+[5] https://docs.microsoft.com/en-us/azure/batch/batch-quota-limit
+[6] https://docs.microsoft.com/en-us/azure/batch/batch-automatic-scaling
+[7] https://docs.microsoft.com/en-us/azure/batch/batch-docker-container-workloads
 
 */
 
@@ -102,27 +103,6 @@ resource "azurerm_storage_management_policy" "files_retention_duration" {
   }
 }
 
-# Create a container registry
-resource "azurerm_container_registry" "acr" {
-  name                = "batchComputingContainerRegistry"
-  resource_group_name = var.resource_group_name
-  location            = var.resource_group_location
-  sku                 = "Basic"
-  admin_enabled       = true
-}
-
-# Push a Docker image to the registry
-resource "null_resource" "push_to_acr" {
-  provisioner "local-exec" {
-    command = <<EOF
-          az acr login --name "${azurerm_container_registry.acr.login_server}" --username "${azurerm_container_registry.acr.admin_username}" --password "${azurerm_container_registry.acr.admin_password}"
-          docker tag ${var.image_name}:${var.image_tag} "${azurerm_container_registry.acr.login_server}"/${var.image_name}:${var.image_tag}
-          docker push "${azurerm_container_registry.acr.login_server}"/${var.image_name}:${var.image_tag}
-  EOF
-  }
-}
-
-
 # Create an Azure Batch account
 resource "azurerm_batch_account" "batch_account" {
   name                 = "batchaccount${terraform.workspace}"
@@ -160,26 +140,12 @@ resource "azurerm_batch_pool" "dynamic_pool" {
     type = "DockerCompatible"
     container_registries {
       # Put informations about the private container registry here
-      registry_server = azurerm_container_registry.acr.login_server
-      user_name       = azurerm_container_registry.acr.admin_username
-      password        = azurerm_container_registry.acr.admin_password
+      registry_server = var.container_registry_login_server
+      user_name       = var.container_registry_username
+      password        = var.container_registry_password
     }
 
     # Pull the image stored in the container registry
-    container_image_names = ["${azurerm_container_registry.acr.login_server}/${var.image_name}:${var.image_tag}"]
-  }
-
-  start_task {
-    # Replace the following by the Docker entrypoint
-    command_line       = var.command_line
-    task_retry_maximum = 1
-    wait_for_success   = true
-
-    user_identity {
-      auto_user {
-        elevation_level = "NonAdmin"
-        scope           = "Task"
-      }
-    }
+    container_image_names = ["${var.container_registry_login_server}/${var.image_name}:${var.image_tag}"]
   }
 }
